@@ -224,7 +224,6 @@ void wsfs_inner(wsfs_connection_t *conn) {
     }
 
     FILE *file = fopen(static_file_path, "rb");
-    WSFS_LOGE("new open file: %s %p", static_file_path, file);
 
     int is_directory = 0;
     struct stat file_stat;
@@ -263,11 +262,13 @@ void wsfs_inner(wsfs_connection_t *conn) {
     const char* content_type = mime_type_by_uri(static_file_path);
 
     char buffer[HTTP_MAX_FILE_SIZE];
-    size_t bytes_read = fread(buffer, 1, sizeof(buffer), file);// If fread returns 0, it could be because the file is empty, or because of an error.
+    size_t bytes_read = fread(buffer, 1, sizeof(buffer), file);
     if (bytes_read == 0 && ferror(file)) {
         WSFS_LOGE("fread error on file: %s", static_file_path);
         clearerr(file);
     }
+
+    WSFS_LOGI("Responding with file: %s", static_file_path);
 
     char response[HTTP_BUFFER_SIZE];
     snprintf(response, HTTP_BUFFER_SIZE, "HTTP/1.1 200 OK\r\nContent-Type: %s\r\nContent-Length: %zu\r\n\r\n", content_type, bytes_read);
